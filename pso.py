@@ -1,9 +1,10 @@
 import numpy as np
+import sobol
 import plotly.express as px
 from tqdm import tqdm
 from copy import deepcopy as deep_copy
 
-from FCM import make_scenario
+from FCM import make_scenario#, make_scenario_fixed_variables
 
 
 def rafael_bambirra_pso(nvar, ncal, type_pso, function, chi, w):
@@ -60,8 +61,8 @@ def rafael_bambirra_pso(nvar, ncal, type_pso, function, chi, w):
                 fval = s + f_star
                 return fval
             #
-            # ============= MAE
-            if self.function == 'MAPE':
+            # ============= exemplo de FCM
+            if self.function == 'FCM_exemple':
                 target = [0.5, 0.5, 0.5, 0.5, 0.5]
                 estado_inicial = {
                     'Áreas de terras alagadas': 0.5,
@@ -74,6 +75,23 @@ def rafael_bambirra_pso(nvar, ncal, type_pso, function, chi, w):
                 df_cenario = make_scenario(matriz_peso, estado_inicial, 7)
                 fval = self.MAPE(np.array(target), np.array(df_cenario.iloc[-1]))
                 return fval
+            #
+            # ============= MAPE
+            # if self.function == 'MAPE':
+            #     nvar = int(np.sqrt(len(x)))
+            #     estados_natureza = sobol.sample(dimension=6, n_points=7)
+            #     estado_inicial = {
+            #         'F1': [0.5,   1,    1,      0,      0,      0.5,    0.5],
+            #         "F2": [0.5,   0.5,  0,      0.5,    1,      1,      0],
+            #         "F3": [0.5,   0,    0.5,    1,      0.5,    0,      1]
+            #     }
+            #     matriz_peso = np.reshape(x, (nvar, nvar))
+            #     for i in range(len(estados_natureza)):
+            #         target = estados_natureza[i, :]
+            #         var_fixas = [estado_inicial['F1'][i], estado_inicial['F2'][i], estado_inicial['F3'][i]]
+            #         df_cenario = make_scenario_fixed_variables(matriz_peso, estado_inicial, 7, n_var=nvar, lamb=3, variaveis_fixas=var_fixas)
+            #     fval = self.MAPE(np.array(target), np.array(df_cenario.iloc[-1][-6:]))
+            #     return fval
 
         @staticmethod
         def MAPE(Y_actual, Y_Predicted):
@@ -220,6 +238,6 @@ def plot_result(f, x, estado_inicial, t):
     fig = px.line(df_cenario)
     fig.show()
 
-f, x = rafael_bambirra_pso(nvar=5*5, ncal=100000, type_pso='Global', function='MAPE', chi=0.9, w=0.9)
+f, x = rafael_bambirra_pso(nvar=9*9, ncal=100000, type_pso='Global', function='MAPE', chi=0.9, w=0.9)
 print(f)
 print(x)

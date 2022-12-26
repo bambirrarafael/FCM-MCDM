@@ -5,8 +5,7 @@ import plotly.graph_objects as go
 import networkx as nx
 
 
-def make_scenario(matriz_peso, dict_estado_inicial, T, lamb=3):
-    n_var = len(dict_estado_inicial)
+def make_scenario(matriz_peso, dict_estado_inicial, T, n_var, lamb=3, variaveis_fixas=None):
     colunas = []
     for var in dict_estado_inicial.keys():
         colunas.append([dict_estado_inicial[var]])
@@ -21,6 +20,58 @@ def make_scenario(matriz_peso, dict_estado_inicial, T, lamb=3):
     colunas = colunas.T
     df_colunas = pd.DataFrame(colunas, columns=dict_estado_inicial.keys())
     return df_colunas
+
+
+
+def make_scenario_CNFCM(matriz_peso, dict_estado_inicial, T, n_var, d_i=0, variaveis_fixas=None):
+    colunas = []
+    for var in dict_estado_inicial.keys():
+        colunas.append([dict_estado_inicial[var]])
+    for t in range(1, T):
+        estado_anterior = []
+        for var in range(n_var):
+            estado_anterior.append(colunas[var][-1])
+        for var in range(n_var):
+            peso_coluna = matriz_peso[:, var]
+            colunas[var].append(certainty_neuron_fcm(estado_anterior, peso_coluna, var, d_i))
+    colunas = np.array(colunas)
+    colunas = colunas.T
+    df_colunas = pd.DataFrame(colunas, columns=dict_estado_inicial.keys())
+    return df_colunas
+
+
+# def make_scenario_fixed_variables(matriz_peso, dict_estado_inicial, T, n_var, lamb=3, variaveis_fixas=None):
+#     colunas = []
+#     for var in dict_estado_inicial.keys():
+#         colunas.append([dict_estado_inicial[var]])
+#     for t in range(1, T):
+#         estado_anterior = []
+#         for var in range(n_var):
+#             estado_anterior.append(colunas[var][-1])
+#         for var in range(n_var):
+#             peso_coluna = matriz_peso[:, var]
+#             colunas[var].append(sigmoid(lamb, estado_anterior, peso_coluna))
+#     colunas = np.array(colunas)
+#     colunas = colunas.T
+#     df_colunas = pd.DataFrame(colunas, columns=dict_estado_inicial.keys())
+#     return df_colunas
+
+
+def certainty_neuron_fcm(estado_anterior, pesos_coluna, var, d_i=0):
+    s_i = np.array(estado_anterior) @ pesos_coluna
+    a_i = estado_anterior[var]
+    if a_i >= 0 and s_i >= 0:
+        f_m = a_i + s_i - s_i*a_i
+    elif a_i < 0 and s_i < 0 and abs(a_i) <= 1 and abs(s_i) <= 1:
+        f_m = a_i + s_i + s_i*a_i
+    else:
+        f_m = (a_i + s_i) / (1 - np.min([abs(a_i), abs(s_i)]))
+    result = f_m - d_i * a_i
+    if result > 1:
+        result = 1
+    elif result < -1:
+        result = -1
+    return result
 
 
 def sigmoid(lamb, estado_anterior, pesos_coluna):

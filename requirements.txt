@@ -4,3 +4,6 @@ plotly
 datetime
 tqdm
 networkx
+sobolsequence
+tensorflow
+openpyxl
