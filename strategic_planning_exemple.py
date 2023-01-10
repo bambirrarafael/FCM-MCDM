@@ -19,12 +19,12 @@ matriz_pesos = np.array(
         [0,     0,      0.7,    0.8,    0,      -0.7,   0],
         [0,     0,      0,      0,      -0.2,   0.8,    0],
         [0,     0.2,    0.7,    0,      0,      0,      0.9],
-        [0,     0,      -0.4,      0,      0,      0.8,    0],
+        [0,     0,      0,      0,      0,      0.8,    0],
         [0.9,   0,      -0.3,   0,      0,      0,      0],
         [0,     0,      0,      -0.3,   0.7,    0,      0]
     ]
 )
 
-df_cenario = make_scenario_CNFCM(matriz_pesos, estado_inicial, 80, n_var=7, d_i=0.5)
+df_cenario = make_scenario_CNFCM(matriz_pesos, estado_inicial, 80, n_var=7, d_i=0.3)
 plot_scenario(df_cenario)
 print(matriz_pesos)
