@@ -4,6 +4,7 @@ plotly
 datetime
 tqdm
 networkx
+numpy_financial
 sobolsequence
 tensorflow
 openpyxl

@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import networkx as nx
 
 
-def make_scenario(matriz_peso, dict_estado_inicial, T, n_var, lamb=3, variaveis_fixas=None):
+def make_scenario(matriz_peso, dict_estado_inicial, T, n_var, lamb=3, dict_variaveis_fixas=None):
     colunas = []
     for var in dict_estado_inicial.keys():
         colunas.append([dict_estado_inicial[var]])
@@ -13,13 +13,35 @@ def make_scenario(matriz_peso, dict_estado_inicial, T, n_var, lamb=3, variaveis_
         estado_anterior = []
         for var in range(n_var):
             estado_anterior.append(colunas[var][-1])
+        if t > 1:
+            estado_anterior= ajustar_variaveis_fixas_no_estado_anterior(dict_variaveis_fixas, dict_estado_inicial, estado_anterior)
         for var in range(n_var):
             peso_coluna = matriz_peso[:, var]
             colunas[var].append(sigmoid(lamb, estado_anterior, peso_coluna))
+
     colunas = np.array(colunas)
     colunas = colunas.T
+    colunas = ajustar_variaveis_fixas_nas_colunas(dict_variaveis_fixas, dict_estado_inicial, colunas, T)
     df_colunas = pd.DataFrame(colunas, columns=dict_estado_inicial.keys())
     return df_colunas
+
+
+def ajustar_variaveis_fixas_no_estado_anterior(variaveis_fixas, dict_estado_inicial, estado_anterior):
+    if variaveis_fixas is not None:
+        list_keys_variaveis_fixas = list(variaveis_fixas.keys())
+        list_keys_estado_inicial = list(dict_estado_inicial.keys())
+        for fixed_var in list_keys_variaveis_fixas:
+            i = list_keys_estado_inicial.index(fixed_var)
+            estado_anterior[i] = variaveis_fixas[fixed_var]
+    return estado_anterior
+
+
+def ajustar_variaveis_fixas_nas_colunas(variaveis_fixas, dict_estado_inicial, colunas, T):
+    if variaveis_fixas is not None:
+        for t in range(1, T):
+            estado_anterior = colunas[t, :]
+            colunas[t, :] = ajustar_variaveis_fixas_no_estado_anterior(variaveis_fixas, dict_estado_inicial, estado_anterior)
+    return colunas
 
 
 
@@ -78,8 +100,8 @@ def sigmoid(lamb, estado_anterior, pesos_coluna):
     return 1 / (1 + np.exp(-lamb * (np.array(estado_anterior) @ pesos_coluna)))
 
 
-def plot_scenario(df_cenario):
-    fig = px.line(df_cenario)
+def plot_scenario(df_cenario, title=None):
+    fig = px.line(df_cenario, title=title)
     fig.show()
 
 
