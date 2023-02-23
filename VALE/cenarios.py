@@ -65,7 +65,7 @@ dict_cenarios_preco = {
 df_preco = pd.DataFrame(dict_cenarios_preco)
 plot_scenario(df_preco, 'Preços nos cenarios')
 
-print('-------------- FIM!')
+print('-------------- FIM da construção de cenários!')
 
 
 def find_fuzzy_value(valor_real, lim_inf, lim_sup):

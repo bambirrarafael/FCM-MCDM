@@ -57,6 +57,25 @@ geracao_solar = np.array([
     4
 ])
 
+
+geracao_eolica = np.array([
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+])
+
 carga_atual = np.array([
     219.01,
     219.01,
@@ -165,7 +184,7 @@ preco_vendas = np.array([
     0.00
 ])
 
-geracao_total = geracao_hidro + geracao_solar
+geracao_total = geracao_hidro + geracao_solar + geracao_eolica
 carga_total = carga_atual + carga_expansao
 recursos = geracao_total + compras
 requisitos = carga_total + vendas
