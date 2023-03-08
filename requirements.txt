@@ -4,6 +4,7 @@ plotly
 datetime
 tqdm
 networkx
+scipy
 numpy_financial
 sobolsequence
 tensorflow
