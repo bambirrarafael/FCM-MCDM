@@ -12,10 +12,10 @@ class CenarioParameters:
         gsf_eolico_fuzzy = np.zeros(t)
 
         for i in range(t):
-            pld_fuzzy[i] = df_cenario_base['C1'].iloc[i]  # for cenario in list_cenarios:
-            gsf_hidro_fuzzy[i] = np.mean(df_cenario_base['C4'].iloc[i])
-            gsf_eolico_fuzzy[i] = np.mean(df_cenario_base['C6'].iloc[i])
-            gsf_solar_fuzzy[i] = np.mean(df_cenario_base['C7'].iloc[i])
+            pld_fuzzy[i] = df_cenario['C1'].iloc[i]  # for cenario in list_cenarios:
+            gsf_hidro_fuzzy[i] = np.mean(df_cenario['C4'].iloc[i])
+            gsf_eolico_fuzzy[i] = np.mean(df_cenario['C6'].iloc[i])
+            gsf_solar_fuzzy[i] = np.mean(df_cenario['C7'].iloc[i])
 
         self.pld = find_real_value(pld_fuzzy, lim_pld[0], lim_pld[1])
         self.gsf_hidro = find_real_value(gsf_hidro_fuzzy, lim_hidro[0], lim_hidro[1])
