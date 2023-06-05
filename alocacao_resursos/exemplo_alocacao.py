@@ -16,46 +16,18 @@ for cen in list_cenarios:
 
 x0 = np.zeros(4)
 
-risco = min_calc_risco(x0, list_objetos_cenarios[0])
-vpl = max_calc_vpl_receita(x0, list_objetos_cenarios[0])
-max_min = calc_max_min(x0, list_objetos_cenarios[0])
-
-# exp = calc_exposicao(x_contrat, x_hidro, x_solar, x_eolico)
-# vpl_receita = calc_vpl(x)
-# risco = calc_risco(x)
                             # contratos         usinas hidraulicas          solares             eólicas
-limites_inferiores_variaveis = [-100] + list(-geracao_hidro[0]) + list(-geracao_solar[0]) + list(-geracao_eolica[0])
+limites_inferiores_variaveis = [-100] + [-geracao_hidro[0]] + [-geracao_solar[0]] + [-geracao_eolica[0]]
 limites_superiores_variaveis = [100] * 4
 list_bounds = []
-for i in range(4 * t):
+for i in range(4):
     list_bounds.append([limites_inferiores_variaveis[i], limites_superiores_variaveis[i]])
 list_constraint = [
     {'type': 'ineq', 'fun': limite_inf_exposicao},
     {'type': 'ineq', 'fun': limite_sup_exposicao}
 ]
 
-#
-# funções para o risco
-result = opt.minimize(min_calc_risco, x0, bounds=list_bounds) # , constraints=list_constraint)
-fval_min_calc_risco = result.fun
-xval_min_calc_risco = result.x
-result = opt.minimize(max_calc_risco, x0, bounds=list_bounds)
-fval_max_calc_risco = -result.fun
-xval_max_calc_risco = result.x
-#
-# funções para a receita
-result = opt.minimize(min_calc_vpl_receita, x0, bounds=list_bounds)
-fval_min_calc_vpl_receita = result.fun
-xval_min_calc_vpl_receita = result.x
-result = opt.minimize(max_calc_vpl_receita, x0, bounds=list_bounds)
-fval_max_calc_vpl_receita = -result.fun
-xval_max_calc_vpl_receita = result.x
-
-args_max_min = (fval_max_calc_risco, fval_min_calc_risco, fval_max_calc_vpl_receita, fval_min_calc_vpl_receita)
-result = opt.minimize(max_min, xval_min_calc_risco, args=args_max_min, bounds=list_bounds)
-f_val_max_min = -result.fun
-solucao_harmoniosa = result.x
-
+solucao_harmoniosa, f_val_max_min = calc_max_min(x0, list_bounds, list_constraint, cenario_object=list_objetos_cenarios[0])
 
 
 print("fim")

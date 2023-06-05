@@ -1,5 +1,6 @@
 import numpy as np
 import numpy_financial as npf
+import scipy.optimize as opt
 from parametros import t, limite_exposicao, taxa_desconto, custo_om_c, custo_om_h, custo_om_s, custo_om_e
 from definicao_portfolio import geracao_hidro, geracao_solar, geracao_eolica, compras, vendas, preco_compras, preco_vendas, carga_total
 
@@ -68,12 +69,29 @@ def max_min(x, fval_max_calc_risco, fval_min_calc_risco, fval_max_calc_vpl_recei
     return - mu_D
 
 
-def calc_max_min(x, cenario_object):
-    fval_max_calc_risco = max_calc_risco(x, cenario_object)
-    fval_min_calc_risco = min_calc_risco(x, cenario_object)
-    fval_max_calc_vpl_receita = max_calc_vpl_receita(x, cenario_object)
-    fval_min_calc_vpl_receita = min_calc_vpl_receita(x, cenario_object)
-    return max_min(x, fval_max_calc_risco, fval_min_calc_risco, fval_max_calc_vpl_receita, fval_min_calc_vpl_receita, cenario_object)
+def calc_max_min(x0, list_bounds, list_constraint, cenario_object):
+    #
+    # funções para o risco
+    result_min_risco = opt.minimize(min_calc_risco, x0, args=cenario_object, bounds=list_bounds, options={'maxiter': 100})  # , constraints=list_constraint)
+    fval_min_calc_risco = result_min_risco.fun
+    xval_min_calc_risco = result_min_risco.x
+    result_max_risco = opt.minimize(max_calc_risco, x0, args=cenario_object, bounds=list_bounds)
+    fval_max_calc_risco = -result_max_risco.fun
+    xval_max_calc_risco = result_max_risco.x
+    #
+    # funções para a receita
+    result_min_vpl = opt.minimize(min_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)
+    fval_min_calc_vpl_receita = result_min_vpl.fun
+    xval_min_calc_vpl_receita = result_min_vpl.x
+    result_max_vpl = opt.minimize(max_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)
+    fval_max_calc_vpl_receita = -result_max_vpl.fun
+    xval_max_calc_vpl_receita = result_max_vpl.x
+
+    args_max_min = (fval_max_calc_risco, fval_min_calc_risco, fval_max_calc_vpl_receita, fval_min_calc_vpl_receita, cenario_object)
+    result = opt.minimize(max_min, xval_min_calc_risco, args=args_max_min, bounds=list_bounds)
+    f_val_max_min = -result.fun
+    solucao_harmoniosa = result.x
+    return solucao_harmoniosa, f_val_max_min
 
 
 def limite_inf_exposicao(x):
