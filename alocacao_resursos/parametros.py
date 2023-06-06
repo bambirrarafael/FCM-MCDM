@@ -1,6 +1,6 @@
 t = 15
 taxa_desconto = 0.05
-limite_exposicao = 50
+limite_exposicao = 80
 
 lim_pld = [50, 600]
 lim_hidro = [-0.15, 0.1]

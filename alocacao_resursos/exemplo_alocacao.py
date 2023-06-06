@@ -32,7 +32,7 @@ list_constraint = [
 
 list_solucoes = []
 for obj_cen in list_objetos_cenarios:
-    solucao_harmoniosa, f_val_max_min = calc_max_min(x0, list_bounds, list_constraint, cenario_object=obj_cen)
+    solucao_harmoniosa, f_val_max_min = calc_max_min(x0, list_bounds, cenario_object=obj_cen)
     list_solucoes.append(solucao_harmoniosa)
     print(f'f_val_max_min: {f_val_max_min} | solução: {solucao_harmoniosa}')
 
@@ -43,6 +43,7 @@ for i in range(len(list_solucoes)):
         payoff_vpl[i, j] = max_calc_vpl_receita(list_solucoes[i], list_objetos_cenarios[j])
         payoff_risco[i, j] = min_calc_risco(list_solucoes[i], list_objetos_cenarios[j])
 payoff_vpl = payoff_vpl/1E6
+payoff_risco = payoff_risco/1E6
 #
 regret_vpl = build_regret_matrix(-payoff_vpl)       # - because it's to be maximized
 cc_vpl = build_choice_criteria_matrix(-payoff_vpl)

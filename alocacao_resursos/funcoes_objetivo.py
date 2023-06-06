@@ -11,8 +11,9 @@ def calc_vpl_receita(x, cenario_object):
     x_solar = x[2]
     x_eolico = x[3]
     exp = calc_exposicao(x)
-    receita_financeira = 8760 * (vendas * preco_vendas + cenario_object.pld * exp - compras * preco_compras - custo_om_h * geracao_hidro - custo_om_s * geracao_solar - cenario_object.p_c * x_contrat - cenario_object.p_h * x_hidro - cenario_object.p_s * x_solar - cenario_object.p_w * x_eolico)
-    return npf.npv(rate=taxa_desconto, values=receita_financeira)
+
+    vetor_receita = 8760 * (vendas * preco_vendas + cenario_object.pld * exp - compras * preco_compras - custo_om_h * geracao_hidro - custo_om_s * geracao_solar - cenario_object.p_c * x_contrat - cenario_object.p_h * x_hidro - cenario_object.p_s * x_solar - cenario_object.p_w * x_eolico)
+    return npf.npv(rate=taxa_desconto, values=vetor_receita)
 
 
 def min_calc_vpl_receita(x, cenario_object):
@@ -29,7 +30,21 @@ def calc_risco(x, cenario_object):
     x_solar = x[2]
     x_eolico = x[3]
     exp = calc_exposicao(x)
-    return np.mean(abs(cenario_object.sigma_spot * exp) + abs(cenario_object.sigma_c * (x_contrat + compras)) + cenario_object.sigma_h * (x_hidro + geracao_hidro) + cenario_object.sigma_w * (x_eolico + geracao_eolica) + cenario_object.sigma_s * (x_solar + geracao_solar))
+    cenario_object.sigma_spot = np.std(exp)
+    energia_a = abs(cenario_object.sigma_spot * (cenario_object.pld * exp))
+    energia_b = abs(cenario_object.sigma_c * (cenario_object.p_c * x_contrat + preco_compras * compras))
+    energia_c = cenario_object.sigma_h * (cenario_object.p_h * x_hidro + custo_om_h * geracao_hidro)
+    energia_d = cenario_object.sigma_s * (cenario_object.p_s * x_solar + custo_om_s * geracao_solar)
+    energia_e = cenario_object.sigma_w * (cenario_object.p_w * x_eolico + custo_om_e * geracao_eolica)
+    preco_a = cenario_object.phi_spot * exp
+    preco_b = cenario_object.phi_c * (x_contrat + compras)
+    preco_c = cenario_object.phi_h * (x_hidro + geracao_hidro)
+    preco_d = cenario_object.phi_s * (x_solar + geracao_solar)
+    preco_e = cenario_object.phi_w * (x_eolico + geracao_eolica)
+    risco_de_energia = (energia_a + energia_b + energia_c + energia_d + energia_e)/(x_contrat + x_hidro + x_solar + x_eolico + compras + geracao_hidro + geracao_solar + geracao_eolica)
+    risco_de_preco = preco_a + preco_b + preco_c + preco_d + preco_e
+    vertor_risco = 8760*(risco_de_energia + risco_de_preco)
+    return np.mean(vertor_risco)
 
 
 def min_calc_risco(x, cenario_object):
@@ -69,26 +84,26 @@ def max_min(x, fval_max_calc_risco, fval_min_calc_risco, fval_max_calc_vpl_recei
     return - mu_D
 
 
-def calc_max_min(x0, list_bounds, list_constraint, cenario_object):
+def calc_max_min(x0, list_bounds, cenario_object):
     #
     # funções para o risco
-    result_min_risco = opt.minimize(min_calc_risco, x0, args=cenario_object, bounds=list_bounds, options={'maxiter': 100})  # , constraints=list_constraint)
+    result_min_risco = opt.minimize(min_calc_risco, x0, args=cenario_object, bounds=list_bounds, options={'maxiter': 800})  # , constraints=list_constraint)
     fval_min_calc_risco = result_min_risco.fun
     xval_min_calc_risco = result_min_risco.x
-    result_max_risco = opt.minimize(max_calc_risco, x0, args=cenario_object, bounds=list_bounds)
+    result_max_risco = opt.minimize(max_calc_risco, x0, args=cenario_object, bounds=list_bounds)  # , constraints=list_constraint)
     fval_max_calc_risco = -result_max_risco.fun
     xval_max_calc_risco = result_max_risco.x
     #
     # funções para a receita
-    result_min_vpl = opt.minimize(min_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)
+    result_min_vpl = opt.minimize(min_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)  # , constraints=list_constraint)
     fval_min_calc_vpl_receita = result_min_vpl.fun
     xval_min_calc_vpl_receita = result_min_vpl.x
-    result_max_vpl = opt.minimize(max_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)
+    result_max_vpl = opt.minimize(max_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)  # , constraints=list_constraint)
     fval_max_calc_vpl_receita = -result_max_vpl.fun
     xval_max_calc_vpl_receita = result_max_vpl.x
 
     args_max_min = (fval_max_calc_risco, fval_min_calc_risco, fval_max_calc_vpl_receita, fval_min_calc_vpl_receita, cenario_object)
-    result = opt.minimize(max_min, xval_min_calc_risco, args=args_max_min, bounds=list_bounds)
+    result = opt.minimize(max_min, xval_min_calc_risco, args=args_max_min, bounds=list_bounds)  # , constraints=list_constraint)
     f_val_max_min = -result.fun
     solucao_harmoniosa = result.x
     return solucao_harmoniosa, f_val_max_min

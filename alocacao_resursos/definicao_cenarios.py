@@ -22,17 +22,23 @@ class CenarioParameters:
         self.gsf_eolico = find_real_value(gsf_eolico_fuzzy, lim_eolico[0], lim_eolico[1])
         self.gsf_solar = find_real_value(gsf_solar_fuzzy, lim_solar[0], lim_solar[1])
         #
-        self.p_spot = np.mean(self.pld)
+        self.p_spot = np.mean(self.pld)        # R$/MWh
         self.p_c = 198.00
         self.p_h = 130.00
         self.p_w = 120.00
         self.p_s = 143.00
         #
-        self.sigma_spot = np.std(self.pld)
+        self.sigma_spot = 0.00                  # MWm
         self.sigma_c = 0.00
         self.sigma_h = np.std(self.gsf_hidro)
         self.sigma_w = np.std(self.gsf_eolico)
         self.sigma_s = np.std(self.gsf_solar)
+        #
+        self.phi_spot = np.std(self.pld)        # R$/MWh
+        self.phi_c = 0.00
+        self.phi_h = 0.00
+        self.phi_w = 0.00
+        self.phi_s = 0.00
 
 
 def find_fuzzy_value(valor_real, lim_inf, lim_sup):
