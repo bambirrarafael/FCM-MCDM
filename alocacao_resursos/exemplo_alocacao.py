@@ -20,7 +20,7 @@ for df_cen in list_cenarios:
 x0 = np.zeros(4)
 
                             # contratos         usinas hidraulicas          solares             eólicas
-limites_inferiores_variaveis = [-100] + [-geracao_hidro[0]] + [-geracao_solar[0]] + [-geracao_eolica[0]]
+limites_inferiores_variaveis = [0] * 4
 limites_superiores_variaveis = [100] * 4
 list_bounds = []
 for i in range(4):

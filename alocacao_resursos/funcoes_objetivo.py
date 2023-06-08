@@ -36,12 +36,13 @@ def calc_risco(x, cenario_object):
     energia_c = cenario_object.sigma_h * (cenario_object.p_h * x_hidro + custo_om_h * geracao_hidro)
     energia_d = cenario_object.sigma_s * (cenario_object.p_s * x_solar + custo_om_s * geracao_solar)
     energia_e = cenario_object.sigma_w * (cenario_object.p_w * x_eolico + custo_om_e * geracao_eolica)
-    preco_a = cenario_object.phi_spot * exp
+    denominador_energia = exp + x_contrat + x_hidro + x_solar + x_eolico + compras + geracao_hidro + geracao_solar + geracao_eolica
+    preco_a = abs(cenario_object.phi_spot * exp)
     preco_b = cenario_object.phi_c * (x_contrat + compras)
     preco_c = cenario_object.phi_h * (x_hidro + geracao_hidro)
     preco_d = cenario_object.phi_s * (x_solar + geracao_solar)
     preco_e = cenario_object.phi_w * (x_eolico + geracao_eolica)
-    risco_de_energia = (energia_a + energia_b + energia_c + energia_d + energia_e)/(x_contrat + x_hidro + x_solar + x_eolico + compras + geracao_hidro + geracao_solar + geracao_eolica)
+    risco_de_energia = (energia_a + energia_b + energia_c + energia_d + energia_e)/denominador_energia
     risco_de_preco = preco_a + preco_b + preco_c + preco_d + preco_e
     vertor_risco = 8760*(risco_de_energia + risco_de_preco)
     return np.mean(vertor_risco)
