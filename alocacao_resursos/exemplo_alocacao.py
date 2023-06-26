@@ -6,7 +6,7 @@ import copy
 from parametros import t, limite_exposicao, taxa_desconto, custo_om_c, custo_om_h, custo_om_s, custo_om_e, lim_pld, lim_hidro, lim_solar, lim_eolico
 from definicao_portfolio import geracao_hidro, geracao_solar, geracao_eolica, compras, vendas, preco_compras, preco_vendas, carga_total
 from definicao_cenarios import df_cenario_base, df_cenario_pouca_chuva, df_cenario_desenvolvimento_mundial, df_cenario_incentivo_renovaveis, CenarioParameters
-from funcoes_objetivo import limite_inf_exposicao, limite_sup_exposicao, min_calc_risco, max_calc_vpl_receita, calc_max_min
+from funcoes_objetivo import limite_inf_exposicao, limite_sup_exposicao, min_calc_risco, max_calc_vpl_receita, calc_max_min, restricao_orcamento
 from xf_model import build_regret_matrix, build_choice_criteria_matrix, build_normalized_choice_criteria_matrix
 
 
@@ -25,13 +25,11 @@ limites_superiores_variaveis = [100] * 4
 list_bounds = []
 for i in range(4):
     list_bounds.append([limites_inferiores_variaveis[i], limites_superiores_variaveis[i]])
-list_constraint = [
-    {'type': 'ineq', 'fun': limite_inf_exposicao},
-    {'type': 'ineq', 'fun': limite_sup_exposicao}
-]
 
 list_solucoes = []
 for obj_cen in list_objetos_cenarios:
+    list_constraint = [{'type': 'ineq', 'fun': restricao_orcamento, 'args': (obj_cen,)}]  # definição da restrição
+    #
     solucao_harmoniosa, f_val_max_min = calc_max_min(x0, list_bounds, cenario_object=obj_cen)
     list_solucoes.append(solucao_harmoniosa)
     print(f'f_val_max_min: {f_val_max_min} | solução: {solucao_harmoniosa}')

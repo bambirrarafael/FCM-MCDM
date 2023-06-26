@@ -2,6 +2,7 @@ import numpy as np
 import numpy_financial as npf
 import scipy.optimize as opt
 from parametros import t, limite_exposicao, taxa_desconto, custo_om_c, custo_om_h, custo_om_s, custo_om_e
+from parametros import limite_orcamento_gamma as gamma
 from definicao_portfolio import geracao_hidro, geracao_solar, geracao_eolica, compras, vendas, preco_compras, preco_vendas, carga_total
 
 
@@ -88,23 +89,23 @@ def max_min(x, fval_max_calc_risco, fval_min_calc_risco, fval_max_calc_vpl_recei
 def calc_max_min(x0, list_bounds, cenario_object):
     #
     # funções para o risco
-    result_min_risco = opt.minimize(min_calc_risco, x0, args=cenario_object, bounds=list_bounds, options={'maxiter': 800})  # , constraints=list_constraint)
+    result_min_risco = opt.minimize(min_calc_risco, x0, args=cenario_object, bounds=list_bounds)#, constraints=list_constraint, method='SLSQP')
     fval_min_calc_risco = result_min_risco.fun
     xval_min_calc_risco = result_min_risco.x
-    result_max_risco = opt.minimize(max_calc_risco, x0, args=cenario_object, bounds=list_bounds)  # , constraints=list_constraint)
+    result_max_risco = opt.minimize(max_calc_risco, x0, args=cenario_object, bounds=list_bounds)#, constraints=list_constraint, method='SLSQP')
     fval_max_calc_risco = -result_max_risco.fun
     xval_max_calc_risco = result_max_risco.x
     #
     # funções para a receita
-    result_min_vpl = opt.minimize(min_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)  # , constraints=list_constraint)
+    result_min_vpl = opt.minimize(min_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)#, constraints=list_constraint, method='SLSQP')
     fval_min_calc_vpl_receita = result_min_vpl.fun
     xval_min_calc_vpl_receita = result_min_vpl.x
-    result_max_vpl = opt.minimize(max_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)  # , constraints=list_constraint)
+    result_max_vpl = opt.minimize(max_calc_vpl_receita, x0, args=cenario_object, bounds=list_bounds)#, constraints=list_constraint, method='SLSQP')
     fval_max_calc_vpl_receita = -result_max_vpl.fun
     xval_max_calc_vpl_receita = result_max_vpl.x
 
     args_max_min = (fval_max_calc_risco, fval_min_calc_risco, fval_max_calc_vpl_receita, fval_min_calc_vpl_receita, cenario_object)
-    result = opt.minimize(max_min, xval_min_calc_risco, args=args_max_min, bounds=list_bounds)  # , constraints=list_constraint)
+    result = opt.minimize(max_min, xval_min_calc_risco, args=args_max_min, bounds=list_bounds)#, constraints=list_constraint, method='SLSQP')
     f_val_max_min = -result.fun
     solucao_harmoniosa = result.x
     return solucao_harmoniosa, f_val_max_min
@@ -116,3 +117,15 @@ def limite_inf_exposicao(x):
 
 def limite_sup_exposicao(x):
     return calc_exposicao(x) - limite_exposicao
+
+
+def restricao_orcamento(x, cenario_object):
+    x_contrat = x[0]
+    x_hidro = x[1]
+    x_solar = x[2]
+    x_eolico = x[3]
+    p_contrat = cenario_object.p_c * x_contrat
+    p_hidro = cenario_object.p_h * x_hidro
+    p_solar = cenario_object.p_s * x_solar
+    p_eolica = cenario_object.p_w * x_eolico
+    return gamma - 8765 * 15 * (p_contrat + p_hidro + p_solar + p_eolica)
