@@ -6,6 +6,33 @@ from parametros import limite_orcamento_gamma as gamma
 from definicao_portfolio import geracao_hidro, geracao_solar, geracao_eolica, compras, vendas, preco_compras, preco_vendas, carga_total
 
 
+def max_calc_diversidade(x):
+    return - calc_diversidade(x)
+
+
+def min_calc_diversidade(x):
+    return calc_diversidade(x)
+
+
+def calc_diversidade(x):
+    epsilon = 1e-7
+    N = len(x) + epsilon
+    x_contrat = x[0]
+    x_hidro = x[1]
+    x_solar = x[2]
+    x_eolico = x[3]
+    recursos_totais = np.sum(x) + compras + geracao_hidro + geracao_solar + geracao_eolica
+    p_contrat = (x_contrat + compras) / recursos_totais
+    p_hidro = (x_hidro + geracao_hidro) / recursos_totais
+    p_solar = (x_solar + geracao_solar) / recursos_totais
+    p_eolico = (x_eolico + geracao_eolica) / recursos_totais
+    d_t = - ((p_contrat * np.log(p_contrat + epsilon) / np.log(N)) +
+             (p_hidro * np.log(p_hidro + epsilon) / np.log(N)) +
+             (p_solar * np.log(p_solar + epsilon) / np.log(N)) +
+             (p_eolico * np.log(p_eolico + epsilon) / np.log(N)))
+    return np.mean(d_t)
+
+
 def calc_vpl_receita(x, cenario_object):
     x_contrat = x[0]
     x_hidro = x[1]

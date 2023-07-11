@@ -6,9 +6,9 @@ import copy
 from parametros import t, limite_exposicao, taxa_desconto, custo_om_c, custo_om_h, custo_om_s, custo_om_e, lim_pld, lim_hidro, lim_solar, lim_eolico
 from definicao_portfolio import geracao_hidro, geracao_solar, geracao_eolica, compras, vendas, preco_compras, preco_vendas, carga_total
 from definicao_cenarios import df_cenario_base, df_cenario_pouca_chuva, df_cenario_desenvolvimento_mundial, df_cenario_incentivo_renovaveis, CenarioParameters
-from funcoes_objetivo import limite_inf_exposicao, limite_sup_exposicao, min_calc_risco, max_calc_vpl_receita, calc_max_min, restricao_orcamento
+from funcoes_objetivo import limite_inf_exposicao, limite_sup_exposicao, min_calc_risco, max_calc_vpl_receita, calc_max_min, restricao_orcamento, calc_diversidade, max_calc_diversidade, min_calc_diversidade
 from xf_model import build_regret_matrix, build_choice_criteria_matrix, build_normalized_choice_criteria_matrix
-
+from xr_models import evaluate_on_xr_model
 
 list_cenarios = [df_cenario_base, df_cenario_pouca_chuva, df_cenario_desenvolvimento_mundial, df_cenario_incentivo_renovaveis]
 
@@ -52,5 +52,29 @@ cc_risco = build_choice_criteria_matrix(payoff_risco)
 ncc_risco = build_normalized_choice_criteria_matrix(cc_risco)
 
 agregated_ncc = np.minimum(ncc_vpl, ncc_risco)
+
+#### XR
+
+solucao_min_diversidade = opt.minimize(min_calc_diversidade, x0, bounds=list_bounds, method='L-BFGS-B')
+solucao_max_diversidade = opt.minimize(max_calc_diversidade, x0, bounds=list_bounds, method='L-BFGS-B')
+solucao_max_diversidade.fun = - solucao_max_diversidade.fun
+
+d_solucoes = np.array([calc_diversidade(list_solucoes[0]), calc_diversidade(list_solucoes[3])])
+mu_hat_Rp = np.zeros([2, 2])
+mu_hat_Rp[0, 0] = (d_solucoes[0] - d_solucoes[0])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
+mu_hat_Rp[1, 1] = (d_solucoes[1] - d_solucoes[1])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
+mu_hat_Rp[0, 1] = (d_solucoes[1] - d_solucoes[0])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
+mu_hat_Rp[1, 0] = (d_solucoes[0] - d_solucoes[1])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
+
+mu_Rp = np.zeros([2, 2])
+for i in range(2):
+    for j in range(2):
+        if mu_hat_Rp[i, j] >= 0.5:
+            mu_Rp[i, j] = 1
+        else:
+            mu_Rp[i, j] = 1 + mu_hat_Rp[i, j] - mu_hat_Rp[j, i]
+
+
+result = evaluate_on_xr_model(mu_Rp)
 
 print("fim")
