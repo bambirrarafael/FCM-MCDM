@@ -63,8 +63,8 @@ d_solucoes = np.array([calc_diversidade(list_solucoes[0]), calc_diversidade(list
 mu_hat_Rp = np.zeros([2, 2])
 mu_hat_Rp[0, 0] = (d_solucoes[0] - d_solucoes[0])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
 mu_hat_Rp[1, 1] = (d_solucoes[1] - d_solucoes[1])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
-mu_hat_Rp[0, 1] = (d_solucoes[1] - d_solucoes[0])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
-mu_hat_Rp[1, 0] = (d_solucoes[0] - d_solucoes[1])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
+mu_hat_Rp[0, 1] = (d_solucoes[0] - d_solucoes[1])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
+mu_hat_Rp[1, 0] = (d_solucoes[1] - d_solucoes[0])/(2*(solucao_max_diversidade.fun - solucao_min_diversidade.fun)) + 0.5
 
 mu_Rp = np.zeros([2, 2])
 for i in range(2):
