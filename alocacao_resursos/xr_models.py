@@ -134,7 +134,7 @@ def plot_membership_functions(x, y, names):
     """
     #
     # Imports
-    import matplotlib.pyplot as plt
+    # import matplotlib.pyplot as plt
     import numpy as np
     #
     # Check x and y lists
